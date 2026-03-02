@@ -480,6 +480,76 @@
             border-radius: 20px;
         }
 
+        .elapsed-badge {
+            font-size: 13px;
+            color: var(--accent-green);
+            background: rgba(52, 211, 153, 0.08);
+            padding: 5px 14px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .elapsed-badge .bolt {
+            font-size: 14px;
+        }
+
+        /* Live timer */
+        .live-timer {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .live-timer.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .timer-value {
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--accent-blue);
+            font-variant-numeric: tabular-nums;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .timer-bar {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+            animation: indeterminate 1.5s ease-in-out infinite;
+        }
+
+        @keyframes indeterminate {
+            0% {
+                width: 0%;
+                margin-left: 0%;
+            }
+
+            50% {
+                width: 40%;
+                margin-left: 30%;
+            }
+
+            100% {
+                width: 0%;
+                margin-left: 100%;
+            }
+        }
+
         /* Post card */
         .post-card {
             background: var(--bg-card);
@@ -761,6 +831,13 @@
                 <button class="primary-btn" id="generateBtn" onclick="generatePosts()">
                     ✨ Generate Posts
                 </button>
+                <div class="live-timer" id="liveTimer">
+                    ⚡ Generating posts in parallel...
+                    <span class="timer-value" id="timerValue">0.0s</span>
+                    <div class="timer-bar">
+                        <div class="timer-bar-fill"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Tab 2: Direct Post -->
@@ -783,7 +860,11 @@ This will be posted directly to your LinkedIn profile without any AI modificatio
         <div class="results-section" id="resultsSection">
             <div class="results-header">
                 <h2>Generated Posts</h2>
-                <span class="results-count" id="resultsCount"></span>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span class="elapsed-badge" id="elapsedBadge" style="display:none;"><span class="bolt">⚡</span>
+                        <span id="elapsedTime"></span></span>
+                    <span class="results-count" id="resultsCount"></span>
+                </div>
             </div>
             <div id="postsContainer"></div>
         </div>
@@ -806,6 +887,11 @@ This will be posted directly to your LinkedIn profile without any AI modificatio
     <script>
         let selectedCount = 2;
         let currentTab = 'ai-generate';
+        let timerInterval = null;
+
+        // ==================== PREFETCH WARMUP ====================
+        // Warm up backend connection on page load
+        fetch('/status').catch(() => { });
 
         // ==================== TAB SWITCHING ====================
         function switchTab(tabId) {
@@ -866,6 +952,16 @@ This will be posted directly to your LinkedIn profile without any AI modificatio
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span> Generating...';
 
+            // Start live timer
+            const timerEl = document.getElementById('liveTimer');
+            const timerVal = document.getElementById('timerValue');
+            let startMs = performance.now();
+            timerEl.classList.add('visible');
+            timerInterval = setInterval(() => {
+                const elapsed = ((performance.now() - startMs) / 1000).toFixed(1);
+                timerVal.textContent = `${elapsed}s`;
+            }, 100);
+
             try {
                 const res = await fetch('/generate', {
                     method: 'POST',
@@ -879,10 +975,12 @@ This will be posted directly to your LinkedIn profile without any AI modificatio
                     return;
                 }
 
-                renderPosts(data.posts);
+                renderPosts(data.posts, data.elapsed);
             } catch (err) {
                 showToast('Network error. Make sure the server is running.', 'error');
             } finally {
+                clearInterval(timerInterval);
+                timerEl.classList.remove('visible');
                 btn.disabled = false;
                 btn.innerHTML = '✨ Generate Posts';
             }
@@ -931,13 +1029,23 @@ This will be posted directly to your LinkedIn profile without any AI modificatio
         }
 
         // ==================== RENDER POST CARDS ====================
-        function renderPosts(posts) {
+        function renderPosts(posts, elapsed) {
             const container = document.getElementById('postsContainer');
             const section = document.getElementById('resultsSection');
             const countEl = document.getElementById('resultsCount');
 
             container.innerHTML = '';
             countEl.textContent = `${posts.length} variation${posts.length > 1 ? 's' : ''}`;
+
+            // Show elapsed time badge
+            const elapsedBadge = document.getElementById('elapsedBadge');
+            const elapsedTimeEl = document.getElementById('elapsedTime');
+            if (elapsed) {
+                elapsedTimeEl.textContent = `${elapsed}s`;
+                elapsedBadge.style.display = 'inline-flex';
+            } else {
+                elapsedBadge.style.display = 'none';
+            }
 
             posts.forEach((post, i) => {
                 const card = document.createElement('div');

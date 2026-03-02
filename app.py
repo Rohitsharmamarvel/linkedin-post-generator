@@ -3,17 +3,50 @@ import time
 import logging
 from logging.handlers import RotatingFileHandler
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 import google.generativeai as genai
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, redirect
+from flask_compress import Compress
 from urllib.parse import urlencode
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
+
+# ============================================================
+# PERFORMANCE: Gzip compression (60-80% smaller responses)
+# ============================================================
+Compress(app)
+
+# ============================================================
+# PERFORMANCE: Template caching in production
+# ============================================================
+app.config['TEMPLATES_AUTO_RELOAD'] = False
+
+# ============================================================
+# PERFORMANCE: Connection pooling via requests.Session
+# ============================================================
+http_session = requests.Session()
+http_session.headers.update({
+    "Content-Type": "application/json",
+})
+# Keep-alive with connection pooling
+adapter = requests.adapters.HTTPAdapter(
+    pool_connections=10,
+    pool_maxsize=20,
+    max_retries=requests.adapters.Retry(total=2, backoff_factor=0.3)
+)
+http_session.mount("https://", adapter)
+http_session.mount("http://", adapter)
+
+# ============================================================
+# PERFORMANCE: Thread pool for parallel Gemini calls
+# ============================================================
+executor = ThreadPoolExecutor(max_workers=5, thread_name_prefix="gemini")
 
 # ============================================================
 # LOGGING SETUP
@@ -82,16 +115,23 @@ logger.info(f"Gemini API Key loaded: {'✅' if os.getenv('GEMINI_API_KEY') else 
 
 
 # ============================================================
-# GEMINI SETUP
+# GEMINI SETUP (singleton — initialized once, reused forever)
 # ============================================================
+_gemini_model_cache = None
+
+
 def get_gemini_model():
+    global _gemini_model_cache
+    if _gemini_model_cache is not None:
+        return _gemini_model_cache
     gemini_key = os.getenv("GEMINI_API_KEY")
     if not gemini_key or gemini_key == "your_gemini_api_key_here":
         logger.error("Gemini API key is missing or placeholder")
         return None
     genai.configure(api_key=gemini_key)
-    logger.debug("Gemini model initialized")
-    return genai.GenerativeModel('gemini-2.5-flash')
+    _gemini_model_cache = genai.GenerativeModel('gemini-2.5-flash')
+    logger.info("✅ Gemini model initialized (cached for reuse)")
+    return _gemini_model_cache
 
 
 # ============================================================
@@ -113,6 +153,38 @@ STRICT RULES TO MATCH MY STYLE:
 
 Do not include any intro or outro text. Just output the {count} posts separated by "---POST---".
 """
+
+# Single-post prompt for parallel generation
+SINGLE_PROMPT_TEMPLATE = """You are a Software Engineer with 4-6 years of experience. You write highly engaging, human-sounding LinkedIn posts that reflect a senior mindset.
+
+Write ONE LinkedIn post about this idea: "{topic}".
+
+STRICT RULES TO MATCH MY STYLE:
+1. DO NOT use cringe AI words like "delve", "elevate", "in today's rapidly evolving digital landscape", "testament", "tapestry", "buckle up", "unleash", or "game-changer".
+2. Keep sentences short, impactful, and conversational.
+3. Use emojis intentionally but sparingly (e.g., 👇, ✅, ❌, ⚖️, 🧠, 👉, ❓) to highlight key points, trade-offs, or bad vs. good practices.
+4. Structure the post with plenty of whitespace. Leave empty lines between almost every sentence.
+5. Use bulleted lists (with •) for readability when making points.
+6. The tone should focus on trade-offs, system design realities, real-world failures, and practical advice rather than textbook theory.
+7. Include 5-7 relevant hashtags at the very bottom (e.g., #SoftwareEngineering #BackendDeveloper #SystemDesign).
+
+Do not include any intro or outro text. Just output the single post.
+"""
+
+
+def _generate_single_post(model, topic, variation_index):
+    """Generate a single post in a thread. Returns (index, post_text)."""
+    prompt = SINGLE_PROMPT_TEMPLATE.format(topic=topic)
+    try:
+        logger.debug(f"Thread {variation_index}: calling Gemini...")
+        start = time.time()
+        response = model.generate_content(prompt)
+        elapsed = round(time.time() - start, 2)
+        logger.debug(f"Thread {variation_index}: Gemini responded in {elapsed}s")
+        return (variation_index, response.text.strip())
+    except Exception as e:
+        logger.error(f"Thread {variation_index} failed: {e}")
+        return (variation_index, None)
 
 
 # ============================================================
@@ -151,7 +223,7 @@ def _post_to_linkedin_api(text):
     }
 
     try:
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response = http_session.post(url, headers=headers, json=payload, timeout=30)
         logger.info(f"LinkedIn API response: {response.status_code}")
         logger.debug(f"LinkedIn API response body: {response.text[:500]}")
 
@@ -217,21 +289,44 @@ def generate():
     if not model:
         return jsonify({"error": "Gemini API key is missing or invalid. Check your .env file."}), 500
 
-    prompt = PROMPT_TEMPLATE.format(count=count, topic=topic)
-    try:
-        logger.info("🤖 Calling Gemini API...")
-        start_time = time.time()
-        response = model.generate_content(prompt)
-        elapsed = round(time.time() - start_time, 2)
-        logger.info(f"✅ Gemini responded in {elapsed}s")
+    start_time = time.time()
 
-        text = response.text
-        posts = [p.strip() for p in text.split("---POST---") if p.strip()]
-        logger.info(f"Generated {len(posts)} post variations")
-        return jsonify({"posts": posts})
-    except Exception as e:
-        logger.exception(f"Gemini generation failed: {e}")
-        return jsonify({"error": f"Generation failed: {str(e)}"}), 500
+    if count == 1:
+        # Single post — straightforward call
+        prompt = PROMPT_TEMPLATE.format(count=1, topic=topic)
+        try:
+            logger.info("🤖 Calling Gemini API (single post)...")
+            response = model.generate_content(prompt)
+            elapsed = round(time.time() - start_time, 2)
+            logger.info(f"✅ Gemini responded in {elapsed}s")
+            posts = [response.text.strip()]
+            return jsonify({"posts": posts, "elapsed": elapsed})
+        except Exception as e:
+            logger.exception(f"Gemini generation failed: {e}")
+            return jsonify({"error": f"Generation failed: {str(e)}"}), 500
+    else:
+        # Multiple posts — PARALLEL generation via ThreadPoolExecutor
+        logger.info(f"🤖 Firing {count} parallel Gemini calls...")
+        futures = []
+        for i in range(count):
+            future = executor.submit(_generate_single_post, model, topic, i)
+            futures.append(future)
+
+        posts = [None] * count
+        for future in as_completed(futures):
+            idx, text = future.result()
+            if text:
+                posts[idx] = text
+
+        # Filter out any failed generations
+        posts = [p for p in posts if p is not None]
+        elapsed = round(time.time() - start_time, 2)
+        logger.info(f"✅ {len(posts)} posts generated in {elapsed}s (parallel)")
+
+        if not posts:
+            return jsonify({"error": "All generation attempts failed. Try again."}), 500
+
+        return jsonify({"posts": posts, "elapsed": elapsed})
 
 
 @app.route("/post-to-linkedin", methods=["POST"])
@@ -326,7 +421,7 @@ def callback():
     logger.info("📥 Received OAuth authorization code, exchanging for token...")
 
     # Exchange code for access token
-    token_response = requests.post("https://www.linkedin.com/oauth/v2/accessToken", data={
+    token_response = http_session.post("https://www.linkedin.com/oauth/v2/accessToken", data={
         "grant_type": "authorization_code",
         "code": code,
         "redirect_uri": LINKEDIN_REDIRECT_URI,
@@ -346,7 +441,7 @@ def callback():
 
     # Fetch person URN using userinfo endpoint
     logger.info("Fetching user info from LinkedIn...")
-    userinfo_response = requests.get("https://api.linkedin.com/v2/userinfo", headers={
+    userinfo_response = http_session.get("https://api.linkedin.com/v2/userinfo", headers={
         "Authorization": f"Bearer {access_token}"
     }, timeout=30)
 
@@ -415,6 +510,9 @@ def callback():
     </html>
     """
 
+# Warm up the Gemini model at startup
+get_gemini_model()
+
 if __name__ == "__main__":
     logger.info(f"🚀 Server starting on http://localhost:5001")
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5001, threaded=True)
