@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}Drafts | Linked Autopilot{% endblock %}
+
+{% block head %}
+<style>
+    .drafts-filters {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+
+    .filter-tab {
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: var(--color-text-secondary);
+        transition: all var(--transition-fast);
+        font-family: var(--font-family);
+    }
+
+    .filter-tab:hover {
+        color: var(--color-text-primary);
+        background: var(--color-surface-hover);
+    }
+
+    .filter-tab.active {
+        color: var(--color-accent);
+        background: var(--color-accent-light);
+    }
+
+    .drafts-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .drafts-table thead th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-muted);
+        border-bottom: 1px solid var(--color-border-light);
+        background: var(--color-bg);
+    }
+
+    .drafts-table tbody tr {
+        transition: background var(--transition-fast);
+        cursor: pointer;
+    }
+
+    .drafts-table tbody tr:hover {
+        background: var(--color-surface-hover);
+    }
+
+    .drafts-table td {
+        padding: 14px 16px;
+        font-size: 0.88rem;
+        border-bottom: 1px solid var(--color-border-light);
+        vertical-align: middle;
+    }
+
+    .draft-title-cell {
+        max-width: 350px;
+    }
+
+    .draft-title {
+        font-weight: 600;
+        color: var(--color-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    .draft-preview {
+        font-size: 0.78rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 2px;
+    }
+
+    .tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .tag-draft {
+        background: var(--color-bg);
+        color: var(--color-text-secondary);
+    }
+
+    .tag-scheduled {
+        background: #FFF3E0;
+        color: #E65100;
+    }
+
+    .tag-published {
+        background: var(--color-success-bg);
+        color: var(--color-success);
+    }
+
+    .draft-actions {
+        display: flex;
+        gap: 6px;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+    }
+
+    .drafts-table tbody tr:hover .draft-actions {
+        opacity: 1;
+    }
+
+    .draft-action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--color-border);
+        background: var(--color-surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        color: var(--color-text-secondary);
+    }
+
+    .draft-action-btn:hover {
+        background: var(--color-bg);
+        color: var(--color-text-primary);
+    }
+
+    .draft-action-btn.danger:hover {
+        background: #FEE2E2;
+        color: #EF4444;
+        border-color: #FECACA;
+    }
+
+    .draft-action-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .empty-drafts {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-drafts-icon {
+        width: 64px;
+        height: 64px;
+        background: var(--color-bg);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        color: var(--color-text-muted);
+    }
+
+    .empty-drafts-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .empty-drafts h3 {
+        font-size: 1rem;
+        margin-bottom: 6px;
+    }
+
+    .empty-drafts p {
+        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+        margin-bottom: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Your Drafts</h1>
+        <p>Manage, edit, and schedule your saved content.</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="/editor" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                style="width:18px;height:18px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            New Post
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="drafts-filters">
+        <button class="filter-tab active" onclick="filterDrafts('all', this)">All</button>
+        <button class="filter-tab" onclick="filterDrafts('draft', this)">Drafts</button>
+        <button class="filter-tab" onclick="filterDrafts('scheduled', this)">Scheduled</button>
+        <button class="filter-tab" onclick="filterDrafts('published', this)">Published</button>
+    </div>
+
+    <div id="drafts-container">
+        <div class="empty-drafts" id="empty-state">
+            <div class="empty-drafts-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+            </div>
+            <h3>No drafts yet</h3>
+            <p>Start writing your first LinkedIn post and it'll appear here.</p>
+            <a href="/editor" class="btn btn-primary btn-sm">Create Your First Post</a>
+        </div>
+
+        <table class="drafts-table" id="drafts-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Length</th>
+                    <th>Last Updated</th>
+                    <th style="width:120px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="drafts-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let allDrafts = [];
+    let currentFilter = 'all';
+
+    async function loadDrafts(status = 'all') {
+        try {
+            const res = await fetch(`/drafts/api/list?status=${status}`);
+            const data = await res.json();
+            if (data.success) {
+                allDrafts = data.drafts;
+                renderDrafts(allDrafts);
+            }
+        } catch (err) {
+            console.error('Failed to load drafts:', err);
+        }
+    }
+
+    function renderDrafts(drafts) {
+        const table = document.getElementById('drafts-table');
+        const empty = document.getElementById('empty-state');
+        const tbody = document.getElementById('drafts-body');
+
+        if (drafts.length === 0) {
+            table.style.display = 'none';
+            empty.style.display = 'block';
+            return;
+        }
+
+        table.style.display = 'table';
+        empty.style.display = 'none';
+
+        tbody.innerHTML = drafts.map(d => {
+            const preview = d.content ? d.content.substring(0, 80) : '';
+            const updated = d.updated_at ? new Date(d.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+            const statusClass = d.status || 'draft';
+
+            return `
+                <tr onclick="window.location='/editor/?draft_id=${d.id}'">
+                    <td class="draft-title-cell">
+                        <span class="draft-title">${escapeHtml(d.title)}</span>
+                        <span class="draft-preview">${escapeHtml(preview)}</span>
+                    </td>
+                    <td><span class="tag tag-${statusClass}">${statusClass}</span></td>
+                    <td style="color:var(--color-text-secondary);font-size:0.82rem;">${d.char_count} chars</td>
+                    <td style="color:var(--color-text-secondary);font-size:0.82rem;">${updated}</td>
+                    <td>
+                        <div class="draft-actions">
+                            <button class="draft-action-btn" onclick="event.stopPropagation(); window.location='/editor/?draft_id=${d.id}'" title="Edit">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125"/></svg>
+                            </button>
+                            <button class="draft-action-btn danger" onclick="event.stopPropagation(); deleteDraft(${d.id})" title="Delete">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function filterDrafts(status, btn) {
+        currentFilter = status;
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        loadDrafts(status);
+    }
+
+    async function deleteDraft(id) {
+        if (!confirm('Delete this draft? This cannot be undone.')) return;
+        try {
+            await fetch(`/drafts/api/delete/${id}`, { method: 'DELETE' });
+            loadDrafts(currentFilter);
+        } catch (err) {
+            alert('Failed to delete draft');
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    loadDrafts();
+</script>
+{% endblock %}

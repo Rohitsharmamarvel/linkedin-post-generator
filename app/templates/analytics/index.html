@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics | Linked Autopilot{% endblock %}
+
+{% block head %}
+<style>
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-lg);
+        margin-bottom: var(--space-xl);
+    }
+
+    .metric-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .metric-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: var(--space-sm);
+    }
+
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--color-text-primary);
+        line-height: 1;
+    }
+
+    .chart-container {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--space-xl);
+        min-height: 350px;
+        position: relative;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-lg);
+    }
+
+    .chart-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+    }
+
+    /* Simple CSS Bar Chart for Mockup */
+    .bars-wrap {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        height: 250px;
+        width: 100%;
+        padding-top: 20px;
+        border-bottom: 2px solid var(--color-border);
+    }
+
+    .bar-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        margin: 0 4px;
+        height: 100%;
+    }
+
+    .bar {
+        width: 100%;
+        max-width: 40px;
+        background: linear-gradient(to top, var(--color-accent), var(--color-accent-hover));
+        border-radius: 4px 4px 0 0;
+        transition: height 0.5s ease-out;
+        min-height: 2px;
+        box-shadow: 0 0 10px var(--color-accent-light);
+    }
+
+    .bar-label {
+        margin-top: 8px;
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Analytics <span>Beta</span></h1>
+        <p>Track your content performance and AI usage.</p>
+    </div>
+</div>
+
+{% if not current_user.linkedin_token %}
+<div style="background-color: #fff3cd; color: #856404; padding: 1rem; border-radius: 4px; border-left: 4px solid #ffeeba; margin-bottom: var(--space-xl);">
+    ⚠️ <strong>Notice:</strong> Connect your LinkedIn account on the dashboard to see real engagement data.
+</div>
+{% endif %}
+
+<div class="analytics-grid">
+    <div class="metric-card">
+        <div class="metric-title">Published Posts</div>
+        <div class="metric-value">{{ published_count }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-title">Total Impressions</div>
+        <div class="metric-value">{{ total_impressions }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-title">Total Likes</div>
+        <div class="metric-value">{{ total_likes }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-title">AI Generations</div>
+        <div class="metric-value">{{ total_gens }}</div>
+    </div>
+</div>
+
+<div class="chart-container">
+    <div class="chart-header">
+        <div class="chart-title">Activity (Last 14 Days)</div>
+        <div>
+            <span class="tag tag-published">Generations</span>
+        </div>
+    </div>
+    <div class="bars-wrap" id="chart-area">
+        <div style="width:100%;text-align:center;color:var(--color-text-muted);padding-top:100px;">
+            Loading chart data...
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function loadChart() {
+        try {
+            const res = await fetch('/analytics/api/activity');
+            const data = await res.json();
+
+            if (data.success) {
+                const area = document.getElementById('chart-area');
+
+                // Find max for scaling
+                const max = Math.max(...data.data.map(d => d.generations), 10);
+
+                area.innerHTML = data.data.map(d => {
+                    const heightPct = Math.max((d.generations / max) * 100, 2);
+                    return `
+                    <div class="bar-col">
+                        <div class="bar" style="height: ${heightPct}%" title="${d.generations} generations"></div>
+                        <div class="bar-label">${d.date}</div>
+                    </div>
+                    `;
+                }).join('');
+            }
+        } catch (e) {
+            console.error("Failed to load chart", e);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadChart);
+</script>
+{% endblock %}

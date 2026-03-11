@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Linked Autopilot{% endblock %}
+
+{% block head %}
+<style>
+    .onboarding-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        margin-bottom: var(--space-2xl);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .onboarding-header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+
+    .onboarding-progress {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--color-bg);
+        border: 2px solid var(--color-border);
+        font-weight: 700;
+        color: var(--color-text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .onboarding-title h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--color-text-primary);
+        margin-bottom: 2px;
+    }
+
+    .onboarding-title p {
+        color: var(--color-text-secondary);
+        font-size: 0.95rem;
+    }
+
+    /* Onboarding Steps */
+    .step-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .step-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-md) var(--space-lg);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+
+    .step-item:hover {
+        border-color: var(--color-border-light);
+        box-shadow: var(--shadow-sm);
+        transform: translateY(-1px);
+    }
+
+    .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: var(--space-md);
+    }
+
+    .icon-linkedin {
+        background: #EEF2FF;
+        color: #4F46E5;
+    }
+
+    .icon-editor {
+        background: #FFF7ED;
+        color: #EA580C;
+    }
+
+    .step-content {
+        flex: 1;
+    }
+
+    .step-content h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin-bottom: 2px;
+    }
+
+    .step-content p {
+        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+    }
+
+    .step-action .btn {
+        background: var(--color-bg);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        font-weight: 600;
+        padding: 8px 16px;
+    }
+
+    .step-action .btn:hover {
+        background: var(--color-bg-subtle);
+    }
+
+    /* Analytics Section Header */
+    .analytics-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-lg);
+    }
+
+    .analytics-header-left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+    }
+
+    .analytics-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--color-accent-light);
+        color: var(--color-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .analytics-title h2 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--color-text-primary);
+    }
+
+    .analytics-title p {
+        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Workspace Navigation (Prosp.ai style) -->
+<div
+    style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:var(--space-xl); border-bottom:1px solid var(--color-border-light); padding-bottom:var(--space-md);">
+    <div style="display:flex; align-items:center; gap:var(--space-lg);">
+        <select class="form-select"
+            style="width:200px; font-weight:600; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-full); padding:6px 16px;">
+            <option>My first workspace</option>
+        </select>
+        {% if current_user.plan == 'free' %}
+        <div
+            style="display:flex; align-items:center; gap:6px; color:var(--color-warning); font-size:0.85rem; font-weight:700;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                style="width:16px;height:16px;">
+                <path fill-rule="evenodd"
+                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                    clip-rule="evenodd" />
+            </svg>
+            Activate your trial
+        </div>
+        {% endif %}
+        <a href="/editor" class="btn btn-primary" style="border-radius:var(--radius-full);">Create a post</a>
+    </div>
+</div>
+
+<!-- Onboarding Section -->
+<div class="onboarding-card">
+    <div class="onboarding-header">
+        <div class="onboarding-progress">
+            {% set completed_steps = 0 %}
+            {% if current_user.linkedin_token %}{% set completed_steps = completed_steps + 1 %}{% endif %}
+            {% if drafts_count > 0 or scheduled_count > 0 or published_count > 0 %}{% set completed_steps =
+            completed_steps + 1 %}{% endif %}
+            {{ completed_steps }}/2
+        </div>
+        <div class="onboarding-title">
+            <h1>Let's get started {{ current_user.name.split(' ')[0] if current_user.name else 'Creator' }} 👋</h1>
+            <p>Follow these steps to get the most out of Linked Autopilot</p>
+        </div>
+    </div>
+
+    <div class="step-list">
+        <!-- Step 1: Connect LinkedIn -->
+        <div class="step-item" style="{% if current_user.linkedin_token %}opacity:0.6;{% endif %}">
+            <div style="display:flex; align-items:center;">
+                <div class="step-icon icon-linkedin">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="currentColor">
+                        <path
+                            d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                    </svg>
+                </div>
+                <div class="step-content">
+                    <h3>Connect your LinkedIn account</h3>
+                    <p>Unlock our most powerful features by connecting your account securely via OAuth 2.0.</p>
+                </div>
+            </div>
+            <div class="step-action">
+                {% if current_user.linkedin_token %}
+                <button class="btn" disabled
+                    style="background:var(--color-success-bg); color:var(--color-success); border-color:var(--color-success);">✓
+                    Connected</button>
+                {% else %}
+                <a href="{{ url_for('auth.linkedin_connect') }}" class="btn"
+                    style="background:var(--color-bg); color:var(--color-text-primary); border:1px solid var(--color-border); font-weight:600; padding:8px 16px; text-decoration:none; display:inline-block;">+
+                    Connect now</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Step 2: Create a post -->
+        <div class="step-item"
+            style="{% if drafts_count > 0 or scheduled_count > 0 or published_count > 0 %}opacity:0.6;{% endif %}">
+            <div style="display:flex; align-items:center;">
+                <div class="step-icon icon-editor">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        style="width:20px;height:20px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </div>
+                <div class="step-content">
+                    <h3>Write your first post</h3>
+                    <p>Use AI to generate ideas, refine your content, and organize your drafts.</p>
+                </div>
+            </div>
+            <div class="step-action">
+                {% if drafts_count > 0 or scheduled_count > 0 or published_count > 0 %}
+                <button class="btn" disabled
+                    style="background:var(--color-success-bg); color:var(--color-success); border-color:var(--color-success);">✓
+                    Completed</button>
+                {% else %}
+                <a href="/editor" class="btn">+ Create a post</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Section -->
+<div>
+    <div class="analytics-header">
+        <div class="analytics-header-left">
+            <div class="analytics-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    style="width:20px;height:20px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+                </svg>
+            </div>
+            <div class="analytics-title">
+                <h2>Analytics</h2>
+                <p>Monitor the results of your content</p>
+            </div>
+        </div>
+        <div>
+            <select class="form-select"
+                style="background:var(--color-bg); font-weight:600; padding:6px 12px; height:auto;">
+                <option>This Week</option>
+                <option>All Time</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid" style="margin-bottom:0;">
+        <div class="stat-card" style="box-shadow:none;">
+            <div class="stat-card-icon blue"
+                style="background:transparent; color:var(--color-text-secondary); width:auto; justify-content:flex-start;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+            </div>
+            <div class="stat-card-value">{{ drafts_count }}</div>
+            <div class="stat-card-label" style="font-size:0.95rem; font-weight:700; color:var(--color-text-secondary);">
+                Total Drafts</div>
+        </div>
+
+        <div class="stat-card" style="box-shadow:none;">
+            <div class="stat-card-icon orange"
+                style="background:transparent; color:var(--color-text-secondary); width:auto; justify-content:flex-start;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            </div>
+            <div class="stat-card-value">{{ scheduled_count }}</div>
+            <div class="stat-card-label" style="font-size:0.95rem; font-weight:700; color:var(--color-text-secondary);">
+                Scheduled</div>
+        </div>
+
+        <div class="stat-card" style="box-shadow:none;">
+            <div class="stat-card-icon green"
+                style="background:transparent; color:var(--color-text-secondary); width:auto; justify-content:flex-start;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            </div>
+            <div class="stat-card-value">{{ published_count }}</div>
+            <div class="stat-card-label" style="font-size:0.95rem; font-weight:700; color:var(--color-text-secondary);">
+                Published</div>
+        </div>
+
+        <div class="stat-card" style="box-shadow:none;">
+            <div class="stat-card-icon purple"
+                style="background:transparent; color:var(--color-text-secondary); width:auto; justify-content:flex-start;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                </svg>
+            </div>
+            <div class="stat-card-value">{{ ai_gens_count }}</div>
+            <div class="stat-card-label" style="font-size:0.95rem; font-weight:700; color:var(--color-text-secondary);">
+                AI Generations</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

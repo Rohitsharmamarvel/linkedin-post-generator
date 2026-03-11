@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Lead Finder | Linked Autopilot{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Find Leads</h1>
+        <p>Enter a prospect's name and company domain to run a waterfall enrichment search.</p>
+    </div>
+</div>
+
+<div
+    style="background-color: #fff3cd; color: #856404; padding: 1rem; border-radius: 4px; border-left: 4px solid #ffeeba; margin-bottom: var(--space-xl);">
+    ⚠️ <strong>Demo Mode:</strong> Results are illustrative only. Real API integration coming soon.
+</div>
+
+<div class="card mb-4">
+    <div class="card-title mb-3">Waterfall Search</div>
+    <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+        <input type="text" id="first-name" class="form-input" placeholder="First Name (e.g., Marx)" style="flex:1;">
+        <input type="text" id="last-name" class="form-input" placeholder="Last Name (e.g., Hershey)" style="flex:1;">
+        <input type="text" id="domain" class="form-input" placeholder="Domain (e.g., stripe.com)" style="flex:1;">
+        <button class="btn btn-primary" id="btn-search" onclick="searchLeads()"
+            style="display:flex;align-items:center;gap:8px;padding:0 24px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                style="width:16px; height:16px;">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+            Search
+        </button>
+    </div>
+    <div id="search-error" class="alert alert-danger" style="display:none;margin-top:16px;"></div>
+</div>
+
+<!-- Results Panel -->
+<div class="card" id="results-panel" style="display:none; padding:32px;">
+    <div style="font-size:1.1rem; font-weight:600; color:var(--color-primary); margin-bottom: 24px;">
+        Contacts found
+    </div>
+
+    <div
+        style="display:grid; grid-template-columns: 1fr 1.5fr 1fr 1fr; gap: 16px; margin-bottom: 12px; color: var(--color-text-muted); font-size: 0.85rem; font-weight: 500; text-transform:uppercase; letter-spacing:0.05em;">
+        <div>Name</div>
+        <div>Email</div>
+        <div>Phone</div>
+        <div>Current position</div>
+    </div>
+
+    <div id="result-user-row"
+        style="display:grid; grid-template-columns: 1fr 1.5fr 1fr 1fr; gap: 16px; padding: 16px 0; border-top: 1px solid var(--color-border-light); align-items: center; background:#fff; margin-bottom:24px;">
+        <div style="font-weight: 600; display:flex; align-items:center; gap:12px;">
+            <div id="res-avatar"
+                style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">
+            </div>
+            <span id="res-name">-</span>
+        </div>
+        <div style="color: var(--color-primary); font-weight: 500; display:flex; align-items:center; gap:8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                style="width:16px;height:16px">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.909A2.25 2.25 0 012.25 6.993V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25" />
+            </svg>
+            <span id="res-email">-</span>
+        </div>
+        <div style="color: var(--color-primary); font-weight: 500; display:flex; align-items:center; gap:8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                style="width:16px;height:16px">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.896-1.596-5.48-4.18-7.076-7.076l1.293-.97c.362-.271.527-.733.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+            </svg>
+            <span id="res-phone">-</span>
+        </div>
+        <div style="color: var(--color-text-secondary); font-weight:500;" id="res-position">-</div>
+    </div>
+
+    <!-- Waterfall Sources Mock -->
+    <div style="padding: 24px; background: #fafafa; border-radius: 8px; border: 1px solid var(--color-border-light);">
+        <div id="waterfall-steps" style="display:flex; flex-direction: column; gap: 8px;">
+            <!-- Rendered via JS -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function searchLeads() {
+        const firstName = document.getElementById('first-name').value;
+        const lastName = document.getElementById('last-name').value;
+        const domain = document.getElementById('domain').value;
+        const errorAlert = document.getElementById('search-error');
+        const btn = document.getElementById('btn-search');
+
+        if (!firstName || !domain) {
+            errorAlert.style.display = 'block';
+            errorAlert.textContent = 'First Name and Domain are required.';
+            return;
+        }
+
+        errorAlert.style.display = 'none';
+        btn.disabled = true;
+
+        // Simple spinner implementation for the button
+        const originalBtnHTML = btn.innerHTML;
+        btn.innerHTML = 'Searching... <div class="spinner" style="display:inline-block;width:14px;height:14px;border-width:2px;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-left:8px;"></div>';
+
+        try {
+            const res = await fetch('/leads/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ first_name: firstName, last_name: lastName, domain: domain })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                document.getElementById('results-panel').style.display = 'block';
+                document.getElementById('res-name').textContent = data.data.name;
+                document.getElementById('res-avatar').textContent = data.data.name[0];
+                document.getElementById('res-email').textContent = data.data.email;
+                document.getElementById('res-phone').textContent = data.data.phone;
+                document.getElementById('res-position').textContent = data.data.position;
+
+                // Build waterfall
+                const stepsHtml = data.data.sources.map(source => {
+                    const isFound = source.status === 'Found';
+                    return `
+                <div style="display:flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; border: 1px solid var(--color-border-light); border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                    <div style="font-weight: 600; display:flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #334155;">
+                        <div style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background: ${isFound ? '#f0fdf4' : '#f8fafc'}; color: ${isFound ? '#16a34a' : '#64748b'}; font-size:14px;">
+                            ${source.name.substring(0, 2)}
+                        </div>
+                        ${source.name}
+                    </div>
+                    
+                    <div style="display:flex; align-items: center; gap: 24px;">
+                        <span style="color: ${isFound ? 'var(--color-primary)' : 'var(--color-text-muted)'}; font-family: monospace; font-size: 0.95rem;">${source.result || ''}</span>
+                        <span style="background: ${isFound ? '#e0e7ff' : '#f1f5f9'}; color: ${isFound ? '#4338ca' : '#94a3b8'}; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:4px; min-width:100px; justify-content:center;">
+                            ${isFound
+                            ? '<svg style="width:12px;height:12px" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Found'
+                            : '<svg style="width:12px;height:12px" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Not found'
+                        }
+                        </span>
+                    </div>
+                </div>
+                `;
+                }).join('');
+                document.getElementById('waterfall-steps').innerHTML = stepsHtml;
+
+            } else {
+                errorAlert.style.display = 'block';
+                errorAlert.textContent = data.error || 'Failed to search';
+            }
+        } catch (err) {
+            errorAlert.style.display = 'block';
+            errorAlert.textContent = 'Network error while searching.';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHTML;
+        }
+    }
+</script>
+<style>
+    /* Add the generic spinner animation */
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}

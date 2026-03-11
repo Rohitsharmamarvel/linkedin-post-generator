@@ -3,7 +3,7 @@ services:
     name: linkedin-post-generator
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    startCommand: gunicorn "app:create_app('prod')" --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
     envVars:
       - key: GEMINI_API_KEY
         sync: false
@@ -15,6 +15,22 @@ services:
         sync: false
       - key: LINKEDIN_PERSON_URN
         sync: false
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+    plan: free
+    autoDeploy: true
+
+  - type: worker
+    name: linkedin-scheduler
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python worker.py
+    envVars:
+      - key: GEMINI_API_KEY
+        fromService:
+          type: web
+          name: linkedin-post-generator
+          envVarKey: GEMINI_API_KEY
       - key: PYTHON_VERSION
         value: "3.11.0"
     plan: free

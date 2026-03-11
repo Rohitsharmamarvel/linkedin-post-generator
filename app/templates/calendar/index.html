@@ -1,0 +1,644 @@
+{% extends "base.html" %}
+
+{% block title %}Content Calendar | Linked Autopilot{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Content Calendar</h1>
+        <p>Manage your upcoming schedule and track published posts.</p>
+    </div>
+    <a href="{{ url_for('editor.new_post') }}" class="btn btn-primary" id="btn-create-post">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            style="width:16px;height:16px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        New Post
+    </a>
+</div>
+
+{# ── Stats Bar ────────────────────────────────────────────────────────────── #}
+<div class="cal-stats-bar">
+    <div class="cal-stat-card">
+        <div class="cal-stat-value cal-stat-scheduled">{{ scheduled_posts | length }}</div>
+        <div class="cal-stat-label">Upcoming</div>
+    </div>
+    <div class="cal-stat-divider"></div>
+    <div class="cal-stat-card">
+        <div class="cal-stat-value cal-stat-published">{{ published_posts | length }}</div>
+        <div class="cal-stat-label">Published</div>
+    </div>
+    <div class="cal-stat-divider"></div>
+    <div class="cal-stat-card">
+        <div class="cal-stat-value">{{ (scheduled_posts | length) + (published_posts | length) }}</div>
+        <div class="cal-stat-label">Total Posts</div>
+    </div>
+</div>
+
+{# ── Tab Navigation ───────────────────────────────────────────────────────── #}
+<div class="card" style="padding:0; overflow:hidden;">
+    <div class="cal-tabs" role="tablist">
+        <button id="tab-scheduled" class="cal-tab active" role="tab" aria-selected="true" aria-controls="view-scheduled"
+            onclick="switchTab('scheduled')">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                style="width:16px;height:16px;">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
+            Upcoming
+            <span class="cal-tab-badge cal-tab-badge-scheduled">{{ scheduled_posts | length }}</span>
+        </button>
+        <button id="tab-published" class="cal-tab" role="tab" aria-selected="false" aria-controls="view-published"
+            onclick="switchTab('published')">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                style="width:16px;height:16px;">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+            Published
+            <span class="cal-tab-badge cal-tab-badge-published">{{ published_posts | length }}</span>
+        </button>
+    </div>
+
+    {# ── SCHEDULED TAB PANEL ─────────────────────────────────────────────── #}
+    <div id="view-scheduled" role="tabpanel" aria-labelledby="tab-scheduled" style="padding:28px;">
+
+        {% if scheduled_posts | length == 0 %}
+        {# Empty state #}
+        <div class="cal-empty-state">
+            <div class="cal-empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                </svg>
+            </div>
+            <h3>Nothing scheduled yet</h3>
+            <p>Get ahead of your content game. Write and schedule your posts for the week in one sitting.</p>
+            <a href="{{ url_for('editor.new_post') }}" class="btn btn-primary" id="btn-empty-scheduled">Write Your First
+                Post</a>
+        </div>
+
+        {% else %}
+        {# Column headers #}
+        <div class="cal-list-header">
+            <div>Scheduled For</div>
+            <div>Content</div>
+            <div style="text-align:right;">Actions</div>
+        </div>
+
+        <div class="cal-list" id="scheduled-list">
+            {% for post in scheduled_posts %}
+            <div class="cal-list-row" id="scheduled-row-{{ post.id }}">
+                {# Date/time column #}
+                <div class="cal-date-col">
+                    <div class="cal-date-badge">
+                        <span class="cal-date-day">{{ post.scheduled_at.strftime('%d') }}</span>
+                        <span class="cal-date-month">{{ post.scheduled_at.strftime('%b %Y') }}</span>
+                    </div>
+                    <div class="cal-time">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            style="width:12px;height:12px;">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                        {{ post.scheduled_at.strftime('%I:%M %p') }}
+                    </div>
+                </div>
+
+                {# Content column #}
+                <div class="cal-content-col">
+                    {% if post.title %}
+                    <div class="cal-post-title">{{ post.title }}</div>
+                    {% endif %}
+                    <div class="cal-post-preview">
+                        {% if post.content and post.content | length > 150 %}
+                        {{ post.content[:150] }}…
+                        {% else %}
+                        {{ post.content or 'No content' }}
+                        {% endif %}
+                    </div>
+                    {% if post.char_count %}
+                    <div class="cal-char-count">{{ post.char_count }} chars</div>
+                    {% endif %}
+                </div>
+
+                {# Actions column #}
+                <div class="cal-actions-col">
+                    <span class="cal-status-badge cal-status-scheduled">Scheduled</span>
+                    <button class="btn btn-secondary" id="btn-cancel-{{ post.id }}"
+                        onclick="unschedulePost({{ post.id }})" style="padding:6px 14px; font-size:0.8rem;"
+                        title="Move back to drafts">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── PUBLISHED TAB PANEL ─────────────────────────────────────────────── #}
+    <div id="view-published" role="tabpanel" aria-labelledby="tab-published" style="padding:28px; display:none;">
+
+        {% if published_posts | length == 0 %}
+        {# Empty state #}
+        <div class="cal-empty-state">
+            <div class="cal-empty-icon" style="background: rgba(16,185,129,0.1); color:#10b981;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            </div>
+            <h3>No published posts yet</h3>
+            <p>Your post history and engagement metrics will appear here once you go live.</p>
+        </div>
+
+        {% else %}
+        {# Column headers #}
+        <div class="cal-list-header">
+            <div>Published On</div>
+            <div>Content</div>
+            <div style="text-align:right;">Engagement</div>
+        </div>
+
+        <div class="cal-list">
+            {% for post in published_posts %}
+            <div class="cal-list-row cal-list-row-published">
+                {# Published date — use published_at if available, fallback to scheduled_at #}
+                <div class="cal-date-col">
+                    {% set display_date = post.published_at or post.scheduled_at %}
+                    {% if display_date %}
+                    <div class="cal-date-badge cal-date-badge-published">
+                        <span class="cal-date-day">{{ display_date.strftime('%d') }}</span>
+                        <span class="cal-date-month">{{ display_date.strftime('%b %Y') }}</span>
+                    </div>
+                    {% else %}
+                    <div class="cal-date-badge cal-date-badge-published">
+                        <span class="cal-date-day">—</span>
+                        <span class="cal-date-month">Unknown</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# Content column #}
+                <div class="cal-content-col">
+                    {% if post.title %}
+                    <div class="cal-post-title">{{ post.title }}</div>
+                    {% endif %}
+                    <div class="cal-post-preview" style="opacity:0.75;">
+                        {% if post.content and post.content | length > 150 %}
+                        {{ post.content[:150] }}…
+                        {% else %}
+                        {{ post.content or 'No content' }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Engagement metrics — placeholder until LinkedIn API analytics are wired up #}
+                <div class="cal-actions-col"
+                    style="justify-content:flex-end; flex-direction:column; gap:8px; align-items:flex-end;">
+                    <span class="cal-status-badge cal-status-published">Published</span>
+                    <div class="cal-metrics">
+                        <span title="Likes">👍 <strong>—</strong></span>
+                        <span title="Comments">💬 <strong>—</strong></span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+</div>{# end card #}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    /**
+     * switchTab — Toggle between 'scheduled' and 'published' tab panels.
+     * Updates aria attributes for accessibility alongside visual state.
+     * @param {string} view - Either 'scheduled' or 'published'
+     */
+    function switchTab(view) {
+        const tabs = ['scheduled', 'published'];
+
+        tabs.forEach(t => {
+            const tabEl = document.getElementById('tab-' + t);
+            const viewEl = document.getElementById('view-' + t);
+            const isActive = t === view;
+
+            tabEl.classList.toggle('active', isActive);
+            tabEl.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            viewEl.style.display = isActive ? 'block' : 'none';
+        });
+    }
+
+    /**
+     * unschedulePost — Cancel a scheduled post and move it back to 'draft' status.
+     * Requires confirmation before making the API call.
+     * On success, animates the row out and removes it from the DOM.
+     * @param {number} draftId - The ID of the draft to unschedule.
+     */
+    async function unschedulePost(draftId) {
+        const confirmed = confirm(
+            'Cancel this scheduled post?\n\nIt will be moved back to your Drafts where you can edit or reschedule it.'
+        );
+        if (!confirmed) return;
+
+        const btn = document.getElementById('btn-cancel-' + draftId);
+        const row = document.getElementById('scheduled-row-' + draftId);
+
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Cancelling…';
+        }
+
+        try {
+            const res = await fetch('/calendar/api/unschedule/' + draftId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                // Animate row out, then reload to update counts
+                if (row) {
+                    row.style.transition = 'opacity 0.3s, transform 0.3s';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(16px)';
+                    setTimeout(() => window.location.reload(), 350);
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                alert('Error: ' + (data.error || 'Failed to unschedule post.'));
+                if (btn) { btn.disabled = false; btn.textContent = 'Cancel'; }
+            }
+        } catch (e) {
+            alert('Network error. Please check your connection and try again.');
+            if (btn) { btn.disabled = false; btn.textContent = 'Cancel'; }
+        }
+    }
+</script>
+
+<style>
+    /* ── Calendar Page Styles ─────────────────────────────────────── */
+
+    .cal-stats-bar {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        background: var(--color-surface, #fff);
+        border: 1px solid var(--color-border-light, #e5e7eb);
+        border-radius: 12px;
+        padding: 20px 28px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .cal-stat-card {
+        flex: 1;
+        text-align: center;
+    }
+
+    .cal-stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--color-primary, #6366f1);
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .cal-stat-value.cal-stat-scheduled {
+        color: var(--color-accent, #8b5cf6);
+    }
+
+    .cal-stat-value.cal-stat-published {
+        color: #10b981;
+    }
+
+    .cal-stat-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--color-text-muted, #9ca3af);
+    }
+
+    .cal-stat-divider {
+        width: 1px;
+        height: 40px;
+        background: var(--color-border-light, #e5e7eb);
+        margin: 0 24px;
+    }
+
+    /* ── Tabs ──────────────────────────────────────────────────────── */
+    .cal-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--color-border-light, #e5e7eb);
+        background: var(--color-bg, #fafafa);
+    }
+
+    .cal-tab {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--color-text-muted, #9ca3af);
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .cal-tab:hover {
+        color: var(--color-primary, #6366f1);
+        background: rgba(99, 102, 241, 0.04);
+    }
+
+    .cal-tab.active {
+        color: var(--color-primary, #6366f1);
+        border-bottom-color: var(--color-primary, #6366f1);
+        background: #fff;
+    }
+
+    .cal-tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .cal-tab-badge-scheduled {
+        background: rgba(139, 92, 246, 0.12);
+        color: #8b5cf6;
+    }
+
+    .cal-tab-badge-published {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+    }
+
+    /* ── List ──────────────────────────────────────────────────────── */
+    .cal-list-header {
+        display: grid;
+        grid-template-columns: 140px 1fr 200px;
+        gap: 16px;
+        padding: 0 0 12px 0;
+        margin-bottom: 4px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-text-muted, #9ca3af);
+        border-bottom: 1px solid var(--color-border-light, #e5e7eb);
+    }
+
+    .cal-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .cal-list-row {
+        display: grid;
+        grid-template-columns: 140px 1fr 200px;
+        gap: 16px;
+        padding: 16px 20px;
+        border: 1px solid var(--color-border-light, #e5e7eb);
+        border-radius: 10px;
+        align-items: center;
+        background: var(--color-surface, #fff);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .cal-list-row:hover {
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+        transform: translateY(-1px);
+    }
+
+    .cal-list-row-published {
+        opacity: 0.85;
+        background: var(--color-bg, #fafafa);
+    }
+
+    .cal-list-row-published:hover {
+        opacity: 1;
+    }
+
+    /* ── Date Badge ─────────────────────────────────────────────────── */
+    .cal-date-col {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .cal-date-badge {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        padding: 8px 0;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.08);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+    }
+
+    .cal-date-badge-published {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.15);
+    }
+
+    .cal-date-day {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--color-primary, #6366f1);
+        line-height: 1;
+    }
+
+    .cal-date-badge-published .cal-date-day {
+        color: #10b981;
+    }
+
+    .cal-date-month {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-text-muted, #9ca3af);
+        margin-top: 2px;
+    }
+
+    .cal-time {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--color-text-muted, #9ca3af);
+    }
+
+    /* ── Content ────────────────────────────────────────────────────── */
+    .cal-content-col {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .cal-post-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--color-text-primary, #111827);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cal-post-preview {
+        font-size: 0.88rem;
+        color: var(--color-text-secondary, #6b7280);
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .cal-char-count {
+        font-size: 0.72rem;
+        color: var(--color-text-muted, #9ca3af);
+        margin-top: 2px;
+    }
+
+    /* ── Actions ────────────────────────────────────────────────────── */
+    .cal-actions-col {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    .cal-status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .cal-status-scheduled {
+        background: rgba(139, 92, 246, 0.10);
+        color: #8b5cf6;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    .cal-status-published {
+        background: rgba(16, 185, 129, 0.10);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .cal-metrics {
+        display: flex;
+        gap: 16px;
+        font-size: 0.88rem;
+        color: var(--color-text-muted, #9ca3af);
+    }
+
+    .cal-metrics strong {
+        color: var(--color-text-secondary, #6b7280);
+    }
+
+    /* ── Empty State ────────────────────────────────────────────────── */
+    .cal-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 56px 24px;
+    }
+
+    .cal-empty-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: rgba(99, 102, 241, 0.08);
+        color: var(--color-primary, #6366f1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .cal-empty-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .cal-empty-state h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--color-text-primary, #111827);
+        margin-bottom: 10px;
+    }
+
+    .cal-empty-state p {
+        color: var(--color-text-muted, #9ca3af);
+        line-height: 1.6;
+        max-width: 380px;
+        margin-bottom: 28px;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+
+        .cal-list-header,
+        .cal-list-row {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .cal-list-header {
+            display: none;
+        }
+
+        .cal-actions-col {
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .cal-stats-bar {
+            padding: 16px;
+        }
+
+        .cal-stat-divider {
+            display: none;
+        }
+
+        .cal-stat-value {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

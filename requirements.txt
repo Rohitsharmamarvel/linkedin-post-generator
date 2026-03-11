@@ -2,5 +2,15 @@ google-generativeai
 requests
 python-dotenv
 flask
-flask-compress
 gunicorn
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+Authlib
+APScheduler
+stripe
+Flask-Limiter
+cryptography
+bleach
+Flask-WTF
+marshmallow==4.0.1

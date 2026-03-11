@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}400 — Bad Request | Linked Autopilot{% endblock %}
+{% block content %}
+<div
+    style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; padding: 48px 24px;">
+    <div style="font-size:5rem; font-weight:800; color:#f59e0b; line-height:1; margin-bottom:16px;">400</div>
+    <h1 style="font-size:1.75rem; font-weight:700; margin-bottom:12px; color:var(--color-text-primary);">Bad Request
+    </h1>
+    <p style="color:var(--color-text-muted); max-width:440px; margin-bottom:32px; line-height:1.6;">
+        Something was wrong with that request. This can happen if the page expired — try refreshing and submitting
+        again.
+    </p>
+    <a href="/" class="btn btn-primary">← Back to Dashboard</a>
+</div>
+{% endblock %}

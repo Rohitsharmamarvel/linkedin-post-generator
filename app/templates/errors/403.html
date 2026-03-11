@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}403 — Access Denied | Linked Autopilot{% endblock %}
+{% block content %}
+<div
+    style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; padding: 48px 24px;">
+    <div style="font-size:5rem; font-weight:800; color:#f59e0b; line-height:1; margin-bottom:16px;">403</div>
+    <h1 style="font-size:1.75rem; font-weight:700; margin-bottom:12px; color:var(--color-text-primary);">Access Denied
+    </h1>
+    <p style="color:var(--color-text-muted); max-width:440px; margin-bottom:32px; line-height:1.6;">
+        You don't have permission to access this resource.
+        This may be a Pro feature — upgrade your plan to unlock it.
+    </p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a href="/" class="btn btn-secondary">← Dashboard</a>
+        <a href="/payments" class="btn btn-primary">Upgrade to Pro</a>
+    </div>
+</div>
+{% endblock %}
