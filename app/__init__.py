@@ -273,11 +273,17 @@ def create_app(config_name='dev') -> Flask:
     app.register_blueprint(payments_bp, url_prefix='/payments')
 
     # ── Dashboard Root Route ──────────────────────────────────────────────────
+    # ── Landing Page Route ────────────────────────────────────────────────────
     @app.route('/')
-    def index():
-        if not current_user.is_authenticated:
-            return redirect(url_for('auth.login'))
+    def landing():
+        if current_user.is_authenticated:
+            return redirect(url_for('dashboard'))
+        return render_template('landing.html')
 
+    # ── Dashboard Route ───────────────────────────────────────────────────────
+    @app.route('/dashboard')
+    @login_required
+    def dashboard():
         # Scope all queries to the current user — multi-tenancy rule
         drafts_count = models.Draft.query.filter_by(
             user_id=current_user.id, status='draft', is_deleted=False
