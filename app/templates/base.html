@@ -130,6 +130,15 @@
     </nav>
     {% endif %}
 
+    <!-- ═══ Mobile Menu Toggle ═══ -->
+    {% if current_user.is_authenticated %}
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()" title="Toggle Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:24px;height:24px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+    </button>
+    {% endif %}
+
     <!-- ═══ Main Content ═══ -->
     <main class="main-content" {% if not current_user.is_authenticated %}style="margin-left:0" {% endif %}>
         <!-- Theme Toggle -->
@@ -166,8 +175,25 @@
             localStorage.setItem('theme', newTheme);
             updateThemeIcon(newTheme);
         }
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('mobile-active');
+            }
+        }
         document.addEventListener('DOMContentLoaded', () => {
             updateThemeIcon(document.documentElement.getAttribute('data-theme') || 'light');
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                const sidebar = document.querySelector('.sidebar');
+                const toggle = document.querySelector('.mobile-menu-toggle');
+                if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('mobile-active')) {
+                    if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                        sidebar.classList.remove('mobile-active');
+                    }
+                }
+            });
         });
     </script>
     {% block scripts %}{% endblock %}
