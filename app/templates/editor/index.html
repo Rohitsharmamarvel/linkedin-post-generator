@@ -221,7 +221,7 @@
         }
     });
     // 3. Save Draft
-    let currentDraftId = {{ draft.id if draft else 'null' }};
+    let currentDraftId = {{ (draft.id if draft else None)|tojson }};
 
     async function saveDraft() {
         const content = editor.value;

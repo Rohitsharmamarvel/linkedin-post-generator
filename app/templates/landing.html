@@ -326,12 +326,15 @@
     </style>
 </head>
 <body>
+    <script>
+        let currentDraftId = {{ draft.id if draft else 'null' }};
+    </script>
 
     <nav>
-        <div class="logo">
+        <a href="/" class="logo">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Linked Autopilot" style="height:32px; width:auto; border-radius:4px;">
             Linked Autopilot
-        </div>
+        </a>
         <div class="nav-links">
             <a href="#features" class="nav-link">Features</a>
             <a href="#demo" class="nav-link">Demo</a>
