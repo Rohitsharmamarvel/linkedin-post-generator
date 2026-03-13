@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   LinkedIn Content Studio — Design System
+   LinkScale — Design System
    Font: Plus Jakarta Sans
    Style: Modern Light Dashboard (Inspired by Twisty UI)
    ═══════════════════════════════════════════════════════════════ */
@@ -129,7 +129,23 @@ select {
     flex-direction: column;
     z-index: 50;
     padding: var(--space-lg);
-    transition: width var(--transition-slow);
+    transition: all var(--transition-slow);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+}
+
+.sidebar.mobile-active {
+    transform: translateX(0);
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 10px;
 }
 
 .sidebar-brand {
@@ -872,13 +888,40 @@ select {
         transform: translateX(-100%);
     }
 
+    .sidebar.mobile-active {
+        transform: translateX(0);
+    }
+
     .main-content {
         margin-left: 0;
+        padding-top: calc(var(--space-2xl) + 20px);
     }
 
     .stats-grid {
         grid-template-columns: 1fr;
     }
+
+    .mobile-menu-toggle {
+        display: flex !important;
+    }
+}
+
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: var(--space-md);
+    left: var(--space-md);
+    z-index: 1000;
+    width: 44px;
+    height: 44px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    color: var(--color-text-primary);
 }
 
 /* ─── Reduced Motion ─── */

@@ -21,7 +21,7 @@ from app.models import User, UsageLog
 def login():
     """Render the login page. Redirect authenticated users to dashboard."""
     if current_user.is_authenticated:
-        return redirect('/')
+        return redirect('/dashboard')
     return render_template('auth/login.html')
 
 
@@ -103,7 +103,7 @@ def google_callback():
     next_page = request.args.get('next')
     if next_page and next_page.startswith('/'):  # Validate next to prevent open redirect
         return redirect(next_page)
-    return redirect('/')
+    return redirect('/dashboard')
 
 
 @auth_bp.route('/logout')
@@ -129,7 +129,7 @@ def logout():
 
     # Build the redirect response and explicitly delete the remember_token cookie
     # This is the critical step — just calling logout_user() is not always enough
-    response = redirect(url_for('auth.login'))
+    response = redirect(url_for('landing'))
     response.delete_cookie('remember_token')
     response.delete_cookie('session')
     return response

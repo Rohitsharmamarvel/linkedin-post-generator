@@ -1,5 +1,4 @@
-# 🏗️ ENGINEERING STANDARDS & MASTER GUIDELINES
-### LinkedIn Content Studio — Production-Grade Development Bible
+### LinkScale — Production-Grade Development Bible
 
 > **Purpose:** This document is the single source of truth for every engineering decision made in this project.
 > Any AI agent, developer, or contributor **MUST** read and follow this document before writing a single line of code.
@@ -50,7 +49,7 @@ If the answer to any of these is uncertain — **STOP and fix it first.**
 ### 2.1 Directory Structure (Enforced)
 
 ```
-linkedin-bot/
+linkscale/
 ├── app/
 │   ├── __init__.py           # App factory — create_app()
 │   ├── config.py             # Environment-based config classes
@@ -78,8 +77,7 @@ linkedin-bot/
 ├── logs/                     # Application logs (never commit)
 ├── .env                      # Secrets (NEVER commit)
 ├── .env.example              # Template for env vars (always commit)
-├── ENGINEERING_STANDARDS.md  # THIS FILE — always read first
-├── PRDV2.md                  # Product Requirements Document
+├── PRD.md                    # Product Requirements Document
 └── requirements.txt
 ```
 
@@ -846,16 +844,16 @@ fetch('/api/v1/leads', {
 # .github/workflows/ci.yml — Run on every PR (Dockerize & Automated CI/CD)
 steps:
   - name: Build Docker Image
-    run: docker build -t linkedin-bot .
+    run: docker build -t linkscale .
     
   - name: Lint (flake8, black)
-    run: docker run linkedin-bot black --check app/ && flake8 app/
+    run: docker run linkscale black --check app/ && flake8 app/
     
   - name: Security scan (Updated/Vetted Dependencies ONLY)
-    run: docker run linkedin-bot safety check && bandit -r app/
+    run: docker run linkscale safety check && bandit -r app/
     
   - name: Run tests
-    run: docker run linkedin-bot pytest --cov=app --cov-fail-under=80
+    run: docker run linkscale pytest --cov=app --cov-fail-under=80
     
   - name: Check for secrets in code
     run: git-secrets --scan
@@ -1172,5 +1170,5 @@ This document is **living** — update it every time you discover a new pattern,
 
 ---
 
-*Last updated: 2026-03-07 | Version: 1.0.0 | Project: LinkedIn Content Studio*
+*Last updated: 2026-03-13 | Version: 1.0.1 | Project: LinkScale*
 *Author: Engineering Standards Committee — Maintained for all AI agents and developers.*

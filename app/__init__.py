@@ -1,7 +1,7 @@
 """
 app/__init__.py
 ───────────────
-Application factory for LinkedIn Content Studio.
+Application factory for LinkScale.
 
 Engineering Standards compliance:
   - App factory pattern with environment-aware config (Section 2.3)
@@ -57,7 +57,7 @@ def _configure_logging(app: Flask):
         os.mkdir('logs')
 
     file_handler = RotatingFileHandler(
-        'logs/linkedin_studio.log',
+        'logs/linkscale.log',
         maxBytes=10 * 1024 * 1024,  # 10 MB
         backupCount=10
     )
@@ -82,7 +82,7 @@ def _configure_logging(app: Flask):
 
     app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
-    app.logger.info('LinkedIn Content Studio starting up.')
+    app.logger.info('LinkScale starting up.')
 
 
 # ─── APP FACTORY ─────────────────────────────────────────────────────────────
@@ -273,11 +273,17 @@ def create_app(config_name='dev') -> Flask:
     app.register_blueprint(payments_bp, url_prefix='/payments')
 
     # ── Dashboard Root Route ──────────────────────────────────────────────────
+    # ── Landing Page Route ────────────────────────────────────────────────────
     @app.route('/')
-    def index():
-        if not current_user.is_authenticated:
-            return redirect(url_for('auth.login'))
+    def landing():
+        if current_user.is_authenticated:
+            return redirect(url_for('dashboard'))
+        return render_template('landing.html')
 
+    # ── Dashboard Route ───────────────────────────────────────────────────────
+    @app.route('/dashboard')
+    @login_required
+    def dashboard():
         # Scope all queries to the current user — multi-tenancy rule
         drafts_count = models.Draft.query.filter_by(
             user_id=current_user.id, status='draft', is_deleted=False

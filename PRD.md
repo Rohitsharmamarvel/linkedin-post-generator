@@ -1,6 +1,6 @@
-## 📋 PRD: LinkedIn Content Studio (v2, extended)
+## 📋 PRD: LinkScale
 
-> Transform the LinkedIn Post Generator into a full **LinkedIn content management SaaS** — inspired by AuthoredUp, built to monetize.
+> Transform LinkScale into a full **LinkedIn content management SaaS** — inspired by AuthoredUp, built to monetize.
 
 ---
 
@@ -45,6 +45,28 @@ A SaaS tool where LinkedIn creators **write, preview, schedule, and analyze** po
 <!-- slide -->
 ![Publishing reminder with calendar and time picker](/Users/rohitsharma/.gemini/antigravity/brain/ccf5fe49-02e6-4904-97c1-1e2a198852cf/media__1772542030457.png)
 ````
+
+````
+
+---
+
+## 🕵️ Competitor Analysis & Advanced Capabilities (Prosp.ai)
+
+> [!NOTE]
+> Based on our analysis of Prosp.ai, our tool can evolve to compete with high-end outbound automation platforms by incorporating these advanced features in later phases.
+
+### Key Learnings from Prosp.ai
+- **Hyper-Personalized AI Messages:** AI reads the prospect's profile, recent posts, and overall online presence to write unique connection messages and DMs, moving beyond simple template tags like `{{first_name}}`.
+- **Automated Voice Notes (Unique USP):** Sending customized AI voice notes or pre-recorded audio to connections, which drastically increases reply rates compared to simple text.
+- **Unified Inbox & Multi-Account Management:** A single centralized dashboard to manage messages from *all* connected LinkedIn accounts simultaneously. This is essential for lead generation agencies.
+- **Multi-Step Workflows:** Complex sequences that involve viewing profiles, waiting, liking posts, sending connection requests, and automated follow-ups.
+- **Built-In Account Safety:** Using 1 Dedicated Residential Proxy per LinkedIn account to strictly mimic real human browsing behavior, heavily reducing the risk of bans.
+
+### Proposed Additions for V3 Roadmap
+- **Proxy Safety Integration:** Evolve from standard API calls or basic browser automation to using residential proxy support (or tools like `undetected_chromedriver`) to ensure stealth mode and account security.
+- **Voice Note Generation:** Integrate an AI Audio API (like ElevenLabs) to synthesize personalized voice messages to prospects.
+- **Multi-Persona Profiles / Unified Inbox:** Update DB structure to handle multiple `.env` or account sessions under one user account for agency deployment.
+- **Advanced Sequence Builder:** Allow users to build visual workflows for outbound automated campaigns (e.g., view profile -> wait 24h -> connect -> drop voice note).
 
 ---
 
@@ -105,7 +127,7 @@ A SaaS tool where LinkedIn creators **write, preview, schedule, and analyze** po
 ### Project Structure (Target)
 
 ```
-linkedin-content-studio/
+linkscale/
 ├── app/
 │   ├── __init__.py          # App factory (create_app)
 │   ├── config.py            # All config in one place
@@ -194,11 +216,11 @@ linkedin-content-studio/
 
 | Phase | Name | Key Deliverables | Status |
 |-------|------|-----------------|--------|
-| **1** | Foundation | Google OAuth, DB, dashboard shell, sidebar nav | ⬜ Not Started |
-| **2** | Rich Editor + Preview | Formatting toolbar, live LinkedIn preview, drafts | ⬜ Not Started |
-| **3** | Calendar + Scheduling | Weekly calendar, schedule posts, auto-publish | ⬜ Not Started |
-| **4** | Drafts Management | Table view, filters, tags, export | ⬜ Not Started |
-| **5** | Analytics + Monetization | Usage stats, Stripe, Free/Pro tiers | ⬜ Not Started |
+| **1** | Foundation | Google OAuth, DB, dashboard shell, sidebar nav | ✅ Completed |
+| **2** | Rich Editor + Preview | Formatting toolbar, live LinkedIn preview, drafts | ✅ mostly Completed |
+| **3** | Calendar + Scheduling | Weekly calendar, schedule posts, auto-publish | ✅ Completed |
+| **4** | Drafts Management | Table view, filters, tags, export | ✅ Completed |
+| **5** | Analytics + Monetization | Usage stats, Stripe, Free/Pro tiers | ⏳ Pending (Stripe pending) |
 
 ---
 

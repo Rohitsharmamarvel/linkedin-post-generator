@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Editor | Linked Autopilot{% endblock %}
+{% block title %}Editor | LinkScale{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -196,6 +196,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({ topic, tone, maxLength: length })
             });
@@ -220,7 +221,7 @@
         }
     });
     // 3. Save Draft
-    let currentDraftId = {{ draft.id if draft else 'null' }};
+    let currentDraftId = {{ (draft.id if draft else None)|tojson }};
 
     async function saveDraft() {
         const content = editor.value;
@@ -237,7 +238,10 @@
         try {
             const res = await fetch('/drafts/api/save', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
                 body: JSON.stringify({
                     id: currentDraftId,
                     content: content,

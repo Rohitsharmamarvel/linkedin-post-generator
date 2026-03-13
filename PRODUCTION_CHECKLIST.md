@@ -1,5 +1,5 @@
 # 🚀 Production Deployment Checklist
-### LinkedIn Content Studio — Before You Go Live
+### LinkScale — Before You Go Live
 
 > **HOW TO USE THIS FILE**
 > Work through every section top to bottom before deploying.
@@ -471,5 +471,5 @@ python worker.py
 
 ---
 
-*Last updated: 2026-03-10 | Updated by: Antigravity AI*
+*Last updated: 2026-03-13 | Updated by: Antigravity AI*
 *Covers changes through this session: Editor UsageLog & rate limiting, Drafts soft deletes & rate limiting, Calendar sorting & cross-period querying, Background worker token extraction & idempotency, inline scheduler disabling, Analytics UI, Leads demo UI, and overall alignment built on top of previous security revisions.*

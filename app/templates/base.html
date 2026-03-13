@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Linked Autopilot — Write, preview, schedule, and analyze your LinkedIn posts.">
-    <title>{% block title %}Linked Autopilot{% endblock %}</title>
+        content="LinkScale — Write, preview, schedule, and analyze your LinkedIn posts.">
+    <title>{% block title %}LinkScale{% endblock %}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script>
@@ -14,6 +14,7 @@
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         if (savedTheme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
     </script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     {% block head %}{% endblock %}
 </head>
 
@@ -22,13 +23,13 @@
     <!-- ═══ Sidebar ═══ -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand" style="justify-content:center; padding: 24px 0 16px;">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Linked Autopilot" style="height:60px; width:auto; object-fit:contain;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="LinkScale" style="height:60px; width:auto; object-fit:contain;">
         </div>
 
         <div class="sidebar-nav">
             <div class="sidebar-section-label">Main</div>
 
-            <a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" id="nav-dashboard">
+            <a href="/dashboard" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" id="nav-dashboard">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
@@ -115,7 +116,7 @@
                 <div style="margin-top:4px;">
                     <a href="{{ url_for('auth.logout') }}" id="btn-signout"
                         style="color:var(--color-text-muted);font-size:0.72rem;text-decoration:none;display:inline-flex;align-items:center;gap:4px;"
-                        onclick="return confirm('Sign out of Linked Autopilot?')">
+                        onclick="return confirm('Sign out of LinkScale?')">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             style="width:12px;height:12px;">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -127,6 +128,15 @@
             </div>
         </div>
     </nav>
+    {% endif %}
+
+    <!-- ═══ Mobile Menu Toggle ═══ -->
+    {% if current_user.is_authenticated %}
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()" title="Toggle Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:24px;height:24px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+    </button>
     {% endif %}
 
     <!-- ═══ Main Content ═══ -->
@@ -165,8 +175,25 @@
             localStorage.setItem('theme', newTheme);
             updateThemeIcon(newTheme);
         }
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('mobile-active');
+            }
+        }
         document.addEventListener('DOMContentLoaded', () => {
             updateThemeIcon(document.documentElement.getAttribute('data-theme') || 'light');
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                const sidebar = document.querySelector('.sidebar');
+                const toggle = document.querySelector('.mobile-menu-toggle');
+                if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('mobile-active')) {
+                    if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                        sidebar.classList.remove('mobile-active');
+                    }
+                }
+            });
         });
     </script>
     {% block scripts %}{% endblock %}

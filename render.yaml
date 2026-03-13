@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: linkedin-post-generator
+    name: linkscale-web
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn "app:create_app('prod')" --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
@@ -21,7 +21,7 @@ services:
     autoDeploy: true
 
   - type: worker
-    name: linkedin-scheduler
+    name: linkscale-worker
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: python worker.py
@@ -29,7 +29,7 @@ services:
       - key: GEMINI_API_KEY
         fromService:
           type: web
-          name: linkedin-post-generator
+          name: linkscale-web
           envVarKey: GEMINI_API_KEY
       - key: PYTHON_VERSION
         value: "3.11.0"

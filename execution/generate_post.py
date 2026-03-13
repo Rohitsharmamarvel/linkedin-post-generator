@@ -126,7 +126,7 @@ def generate_post(topic: str, tone: str = DEFAULT_TONE, max_length: int = DEFAUL
     
     # Step 3: Call Gemini API (using new google-genai SDK)
     # Try multiple models as fallback (each has separate quota)
-    MODELS_TO_TRY = ["gemini-2.5-flash"]
+    MODELS_TO_TRY = ["gemini-1.5-flash"]
     
     raw_text = None
     last_error = None
