@@ -16,7 +16,10 @@ class Config:
 
     # ─── Database ─────────────────────────────────────────────────────────────
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+    database_url = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+    if database_url and database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = database_url
     # Connection pool settings for production scalability
     SQLALCHEMY_POOL_SIZE = 10
     SQLALCHEMY_MAX_OVERFLOW = 20
