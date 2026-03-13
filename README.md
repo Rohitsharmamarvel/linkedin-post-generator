@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
 </p>
 
-# 🤖 LinkedIn Post Generator
+# 🤖 LinkScale
 
 > AI-powered LinkedIn content generator that creates human-like, engaging posts and publishes them directly to your profile — all from a beautiful web UI.
 
@@ -87,8 +87,8 @@
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/Rohitsharmamarvel/linkedin-post-generator.git
-cd linkedin-post-generator
+git clone https://github.com/Rohitsharmamarvel/linkscale.git
+cd linkscale
 
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -191,7 +191,7 @@ docker run -p 5001:5001 --env-file .env linkedin-bot
 ## 📁 Project Structure
 
 ```
-linkedin-post-generator/
+linkscale/
 ├── app.py                 # Flask backend (routes, Gemini, LinkedIn API)
 ├── linkedin_bot.py        # CLI version (standalone terminal tool)
 ├── test_generation.py     # Test script for post generation

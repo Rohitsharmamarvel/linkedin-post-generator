@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Linked Autopilot — Write, preview, schedule, and analyze your LinkedIn posts.">
-    <title>{% block title %}Linked Autopilot{% endblock %}</title>
+        content="LinkScale — Write, preview, schedule, and analyze your LinkedIn posts.">
+    <title>{% block title %}LinkScale{% endblock %}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script>
@@ -23,7 +23,7 @@
     <!-- ═══ Sidebar ═══ -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand" style="justify-content:center; padding: 24px 0 16px;">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Linked Autopilot" style="height:60px; width:auto; object-fit:contain;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="LinkScale" style="height:60px; width:auto; object-fit:contain;">
         </div>
 
         <div class="sidebar-nav">
@@ -116,7 +116,7 @@
                 <div style="margin-top:4px;">
                     <a href="{{ url_for('auth.logout') }}" id="btn-signout"
                         style="color:var(--color-text-muted);font-size:0.72rem;text-decoration:none;display:inline-flex;align-items:center;gap:4px;"
-                        onclick="return confirm('Sign out of Linked Autopilot?')">
+                        onclick="return confirm('Sign out of LinkScale?')">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             style="width:12px;height:12px;">
                             <path stroke-linecap="round" stroke-linejoin="round"

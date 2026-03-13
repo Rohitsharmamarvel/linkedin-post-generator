@@ -1,7 +1,7 @@
 """
 app/models.py
 ─────────────
-SQLAlchemy models for LinkedIn Content Studio.
+SQLAlchemy models for LinkScale.
 
 Engineering Standards compliance:
   - All models extend BaseModel for consistent audit fields (Section 7.1)

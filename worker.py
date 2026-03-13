@@ -80,7 +80,7 @@ def publish_pending_posts():
             db.session.commit()
 
 if __name__ == '__main__':
-    logger.info("Starting LinkedIn Content Studio Scheduler Worker...")
+    logger.info("Starting LinkScale Scheduler Worker...")
     scheduler = BlockingScheduler()
     
     # Run the job every minute

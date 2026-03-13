@@ -1,7 +1,7 @@
 """
 app/__init__.py
 ───────────────
-Application factory for LinkedIn Content Studio.
+Application factory for LinkScale.
 
 Engineering Standards compliance:
   - App factory pattern with environment-aware config (Section 2.3)
@@ -57,7 +57,7 @@ def _configure_logging(app: Flask):
         os.mkdir('logs')
 
     file_handler = RotatingFileHandler(
-        'logs/linkedin_studio.log',
+        'logs/linkscale.log',
         maxBytes=10 * 1024 * 1024,  # 10 MB
         backupCount=10
     )
@@ -82,7 +82,7 @@ def _configure_logging(app: Flask):
 
     app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
-    app.logger.info('LinkedIn Content Studio starting up.')
+    app.logger.info('LinkScale starting up.')
 
 
 # ─── APP FACTORY ─────────────────────────────────────────────────────────────

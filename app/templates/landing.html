@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linked Autopilot | Automate Your Growth with AI</title>
+    <title>LinkScale | Automate Your Growth with AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -327,13 +327,13 @@
 </head>
 <body>
     <script>
-        let currentDraftId = {{ draft.id if draft else 'null' }};
+        let currentDraftId = {{ (draft.id if draft else None)|tojson }};
     </script>
 
     <nav>
         <a href="/" class="logo">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Linked Autopilot" style="height:32px; width:auto; border-radius:4px;">
-            Linked Autopilot
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="LinkScale" style="height:32px; width:auto; border-radius:4px;">
+            LinkScale
         </a>
         <div class="nav-links">
             <a href="#features" class="nav-link">Features</a>
@@ -374,7 +374,7 @@
         
         <div class="section-header">
             <span class="badge" style="margin-bottom:12px;">App Demo</span>
-            <h2>See Linked Autopilot in Action</h2>
+            <h2>See LinkScale in Action</h2>
             <p>A quick 2-minute tour of how we automate your growth.</p>
         </div>
 
@@ -505,13 +505,13 @@
     <section class="cta-section">
         <div class="cta-inner">
             <h2 style="font-size:3rem; margin-bottom:24px;">Ready to go viral?</h2>
-            <p style="font-size:1.2rem; color:var(--text-muted); margin-bottom:40px;">Join top creators and agencies scaling their outbound with Content Studio.</p>
+            <p style="font-size:1.2rem; color:var(--text-muted); margin-bottom:40px;">Join top creators and agencies scaling their outbound with LinkScale.</p>
             <a href="/auth/login" class="btn btn-primary btn-large">Start your free trial today</a>
         </div>
     </section>
 
     <footer>
-        <p>&copy; 2026 Linked Autopilot. All rights reserved.</p>
+        <p>&copy; 2026 LinkScale. All rights reserved.</p>
         <p style="margin-top:8px;">Designed for high-growth creators.</p>
     </footer>
 
