@@ -16,10 +16,11 @@ class Config:
 
     # ─── Database ─────────────────────────────────────────────────────────────
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    database_url = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
-    if database_url and database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
-    SQLALCHEMY_DATABASE_URI = database_url
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    _db_url = DATABASE_URL or 'sqlite:///app.db'
+    if _db_url.startswith("postgres://"):
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = _db_url
     
     # ─── Authentication (Google OAuth) ────────────────────────────────────────
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
