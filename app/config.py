@@ -34,7 +34,7 @@ class Config:
     # ─── LinkedIn ─────────────────────────────────────────────────────────────
     LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID')
     LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET')
-    LINKEDIN_METADATA_URL = os.environ.get('LINKEDIN_METADATA_URL', 'https://www.linkedin.com/.well-known/openid-configuration')
+    LINKEDIN_METADATA_URL = os.environ.get('LINKEDIN_METADATA_URL', 'https://www.linkedin.com/oauth/.well-known/openid-configuration')
 
     # ─── Encryption (for LinkedIn tokens stored at rest) ──────────────────────
     # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
