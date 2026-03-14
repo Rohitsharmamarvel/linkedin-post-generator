@@ -12,11 +12,11 @@
 
 ## 🚦 CURRENT STATUS SUMMARY (Updated: 2026-03-14)
 **✅ Completed Recently:** 
-- **Production Deployment on Render:** Environment variables strictly set. Start commands fixed to `flask db upgrade && gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --threads 4` to handle database creation on the Free Tier automatically.
-- **Dependencies:** `psycopg2-binary` and `flask-cors` added to `requirements.txt`.
-- **Database:** Internal `DATABASE_URL` patched in `config.py` to allow SQLAlchemy to accept `postgres://` domains.
-- **MCP Setup:** Established a secure connection to Render's backend via the official Go binary MCP server, saving free hours by suspending duplicate services.
-- **Auth Configuration:** Google and LinkedIn OAuth redirect URLs added to match production domain: `https://linkedin-post-generator-1-7ndf.onrender.com`.
+- **Production Database Migration:** Moved from expiring Render Free DB to **Neon.tech** (Free Forever). Successfully tested connection and table migrations.
+- **Dynamic Configuration:** Extracted all critical URLs (Google/LinkedIn Metadata) and Gemini model lists into environment variables (`GOOGLE_METADATA_URL`, `GEMINI_MODELS`, etc.).
+- **LinkedIn OIDC Fix:** Resolved "Missing jwks_uri" error by implementing full OpenID Connect metadata discovery and forcing `client_secret_post` auth method.
+- **UI UX Improvements:** Implemented a global **Flash Alert** system to show success/failure messages at the top of the page.
+- **Gemini SDK Upgrade:** Replaced deprecated `google-generativeai` with the modern `google-genai` SDK and updated model names to `gemini-2.5-flash`.
 
 **⏳ PENDING BEFORE LAUNCH:**
 - **Payments:** Set up real Stripe testing & webhooks for subscriptions.
@@ -74,15 +74,10 @@
 
 > **🔴 CRITICAL** — SQLite on Render will be wiped on every deploy.
 
-- [ ] **Provision a managed PostgreSQL database.**
-  **Options (cheapest first):**
-  - [Neon](https://neon.tech) — Free tier, serverless Postgres. Excellent starting point.
-  - [Render PostgreSQL](https://render.com/docs/databases) — $7/month, easiest integration since you are hosting on Render.
-  - *Note on BaaS Options:* Avoid Supabase. As analyzed recently, its pricing trap for multiple projects and risk of exposing DB queries directly to the client makes it less ideal for a robust, secure app. If you ever want to build your own centralized "Mini-BaaS" (in Go/Rust) for user multi-tenancy later, a standard raw Postgres server like Neon or Render gives you the ultimate control to do so without vendor lock-in.
-
-- [ ] **Set `DATABASE_URL`** environment variable to the `postgresql://...` connection string.
-
-- [ ] **Run migrations on deploy** — Add `flask db upgrade` as a pre-deploy or release command.
+- [x] **Provision a managed PostgreSQL database.**
+  - [x] **Migrated to Neon.tech** (Serverless Postgres). No 30-day expiration.
+  - [x] **Set `DATABASE_URL`** to the Neon connection string in Render.
+- [x] **Run migrations on deploy** — Added `flask db upgrade` to the start command.
   In Render: Settings → Build & Deploy → Pre-deploy command:
   ```
   flask db upgrade

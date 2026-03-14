@@ -18,6 +18,16 @@ Since we cannot use the Shell to migrate the database on the Free Tier, the data
 * Production deployments run off the `main` branch.
 * After fixing bugs locally, they must be merged heavily into `main` and pushed so Render can pick them up when the user clicks Manual Deploy.
 
+## 🛰️ Future-Proof Dynamic Configuration
+Critical URLs and model names are now managed via environment variables. Do NOT hardcode these in scripts:
+1. `GOOGLE_METADATA_URL` / `LINKEDIN_METADATA_URL`: For OIDC discovery.
+2. `GEMINI_MODELS`: Comma-separated list of models for `execution/generate_post.py`.
+
+## 🛢️ Database (Neon.tech)
+The app uses **Neon.tech** for production data. It is "Free Forever." 
+1. The connection string is in the Render environment as `DATABASE_URL`.
+2. Migrations still run automatically via the start command.
+
 ## 🪪 OAuth Configuration Reminders
 When URLs change, remind the user to update:
 1. Google Cloud Console -> Authorized JavaScript origins & Authorized redirect URIs (`/auth/callback`)

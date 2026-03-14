@@ -10,7 +10,7 @@ Engineering Standards compliance:
   - Login attempts logged for audit trail (Section 8.2)
   - No secrets stored — only google_id and profile info (Section 3.4)
 """
-from flask import redirect, url_for, session, render_template, request, current_app
+from flask import redirect, url_for, session, render_template, request, current_app, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app.auth import auth_bp
 from app.extensions import db, oauth, limiter
@@ -48,6 +48,7 @@ def google_callback():
         token = oauth.google.authorize_access_token()
     except Exception as e:
         current_app.logger.warning("Google OAuth callback error: %s", e)
+        flash("Google sign-in failed. Please try again.", "danger")
         return redirect(url_for('auth.login'))
 
     userinfo = token.get('userinfo')
@@ -98,6 +99,7 @@ def google_callback():
 
     login_user(user, remember=True)
     current_app.logger.info("User %s logged in.", user.id)
+    flash(f"Welcome back, {user.name or 'Creator'}!", "success")
 
     # Redirect to intended page if there was a 'next' param, otherwise dashboard
     next_page = request.args.get('next')
@@ -162,7 +164,7 @@ def linkedin_callback():
         token = oauth.linkedin.authorize_access_token()
     except Exception as e:
         current_app.logger.error("Failed to fetch LinkedIn access token: %s", e)
-        # Fall back to returning to the connect page on error
+        flash("LinkedIn connection failed. Please ensure you granted all permissions.", "danger")
         return redirect(url_for('auth.linkedin_connect'))
         
     access_token = token.get('access_token')
@@ -196,6 +198,6 @@ def linkedin_callback():
     li_token.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
     
     db.session.commit()
-    
+    flash("LinkedIn profile successfully linked!", "success")
     return redirect(url_for('auth.linkedin_connect'))
 

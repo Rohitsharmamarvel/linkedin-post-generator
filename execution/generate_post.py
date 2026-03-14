@@ -17,6 +17,7 @@ load_dotenv()
 
 # ─── Configuration ───
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+GEMINI_MODELS = os.environ.get('GEMINI_MODELS', 'gemini-2.5-flash,gemini-2.0-flash').split(',')
 DEFAULT_TONE = 'professional'
 DEFAULT_MAX_LENGTH = 1500
 VALID_TONES = ['professional', 'casual', 'storytelling', 'provocative', 'educational']
@@ -126,7 +127,7 @@ def generate_post(topic: str, tone: str = DEFAULT_TONE, max_length: int = DEFAUL
     
     # Step 3: Call Gemini API (using new google-genai SDK)
     # Try multiple models as fallback (each has separate quota)
-    MODELS_TO_TRY = ["gemini-2.5-flash", "gemini-2.0-flash"]
+    MODELS_TO_TRY = GEMINI_MODELS
     
     raw_text = None
     last_error = None
