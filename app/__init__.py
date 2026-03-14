@@ -121,7 +121,7 @@ def create_app(config_name='dev') -> Flask:
         name='google',
         client_id=app.config.get('GOOGLE_CLIENT_ID'),
         client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
-        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        server_metadata_url=app.config.get('GOOGLE_METADATA_URL'),
         client_kwargs={
             'scope': 'openid email profile'  # Minimal scopes — never request more than needed
         }
@@ -132,7 +132,7 @@ def create_app(config_name='dev') -> Flask:
         name='linkedin',
         client_id=app.config.get('LINKEDIN_CLIENT_ID'),
         client_secret=app.config.get('LINKEDIN_CLIENT_SECRET'),
-        server_metadata_url='https://www.linkedin.com/.well-known/openid-configuration',
+        server_metadata_url=app.config.get('LINKEDIN_METADATA_URL'),
         client_kwargs={'scope': 'openid profile w_member_social email'},
         token_endpoint_auth_method='client_secret_post'
     )

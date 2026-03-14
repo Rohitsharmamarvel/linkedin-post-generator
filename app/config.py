@@ -29,10 +29,12 @@ class Config:
     # ─── Authentication (Google OAuth) ────────────────────────────────────────
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+    GOOGLE_METADATA_URL = os.environ.get('GOOGLE_METADATA_URL', 'https://accounts.google.com/.well-known/openid-configuration')
 
     # ─── LinkedIn ─────────────────────────────────────────────────────────────
     LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID')
     LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET')
+    LINKEDIN_METADATA_URL = os.environ.get('LINKEDIN_METADATA_URL', 'https://www.linkedin.com/.well-known/openid-configuration')
 
     # ─── Encryption (for LinkedIn tokens stored at rest) ──────────────────────
     # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
@@ -46,6 +48,7 @@ class Config:
 
     # ─── AI (Gemini) ──────────────────────────────────────────────────────────
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+    GEMINI_MODELS = os.environ.get('GEMINI_MODELS', 'gemini-2.5-flash,gemini-2.0-flash')
 
     # ─── Rate Limiting ────────────────────────────────────────────────────────
     # In production, switch to redis:// for multi-process/multi-server support
