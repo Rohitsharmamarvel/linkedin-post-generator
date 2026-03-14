@@ -132,11 +132,7 @@ def create_app(config_name='dev') -> Flask:
         name='linkedin',
         client_id=app.config.get('LINKEDIN_CLIENT_ID'),
         client_secret=app.config.get('LINKEDIN_CLIENT_SECRET'),
-        access_token_url='https://www.linkedin.com/oauth/v2/accessToken',
-        access_token_params=None,
-        authorize_url='https://www.linkedin.com/oauth/v2/authorization',
-        authorize_params=None,
-        api_base_url='https://api.linkedin.com/v2/',
+        server_metadata_url='https://www.linkedin.com/.well-known/openid-configuration',
         client_kwargs={'scope': 'openid profile w_member_social email'},
         token_endpoint_auth_method='client_secret_post'
     )
