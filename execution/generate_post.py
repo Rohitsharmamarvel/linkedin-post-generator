@@ -126,7 +126,7 @@ def generate_post(topic: str, tone: str = DEFAULT_TONE, max_length: int = DEFAUL
     
     # Step 3: Call Gemini API (using new google-genai SDK)
     # Try multiple models as fallback (each has separate quota)
-    MODELS_TO_TRY = ["gemini-1.5-flash"]
+    MODELS_TO_TRY = ["gemini-2.5-flash", "gemini-2.0-flash"]
     
     raw_text = None
     last_error = None
@@ -153,7 +153,10 @@ def generate_post(topic: str, tone: str = DEFAULT_TONE, max_length: int = DEFAUL
                     break  # Non-quota error, stop trying
         
         if not raw_text:
-            return {"success": False, "error": f"Gemini API returned empty response. It is possible you hit a usage limit or server error.", "code": "GEMINI_EMPTY"}
+            error_msg = f"Gemini API returned empty response. It is possible you hit a usage limit or server error."
+            if last_error:
+                error_msg += f" Underlying error: {last_error}"
+            return {"success": False, "error": error_msg, "code": "GEMINI_EMPTY"}
             
     except Exception as e:
         return {"success": False, "error": f"Gemini API Error: {str(e)}", "code": "GEMINI_ERROR"}
