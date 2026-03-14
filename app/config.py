@@ -9,10 +9,10 @@ load_dotenv()
 class Config:
     """
     Base configuration shared across all environments.
-    All sensitive values MUST come from environment variables — never hardcoded.
     """
     # ─── Flask Core ───────────────────────────────────────────────────────────
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE-ME-IN-PRODUCTION-USE-STRONG-RANDOM-KEY')
+    # STRICT: This will crash if not set in production.
+    SECRET_KEY = os.environ.get('SECRET_KEY')
 
     # ─── Database ─────────────────────────────────────────────────────────────
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -20,49 +20,48 @@ class Config:
     if database_url and database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
     SQLALCHEMY_DATABASE_URI = database_url
-    # Connection pool settings for production scalability
-    SQLALCHEMY_POOL_SIZE = 10
-    SQLALCHEMY_MAX_OVERFLOW = 20
-    SQLALCHEMY_POOL_TIMEOUT = 30
-    SQLALCHEMY_POOL_RECYCLE = 1800  # Recycle connections every 30 min
-
+    
     # ─── Authentication (Google OAuth) ────────────────────────────────────────
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
-    GOOGLE_METADATA_URL = os.environ.get('GOOGLE_METADATA_URL', 'https://accounts.google.com/.well-known/openid-configuration')
+    # These are OIDC Standards — the internet usually keeps these fixed.
+    GOOGLE_METADATA_URL = os.environ.get(
+        'GOOGLE_METADATA_URL', 
+        'https://accounts.google.com/.well-known/openid-configuration'
+    )
 
     # ─── LinkedIn ─────────────────────────────────────────────────────────────
     LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID')
     LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET')
-    LINKEDIN_METADATA_URL = os.environ.get('LINKEDIN_METADATA_URL', 'https://www.linkedin.com/oauth/.well-known/openid-configuration')
+    # Refined default — but easily overridden in Render
+    LINKEDIN_METADATA_URL = os.environ.get(
+        'LINKEDIN_METADATA_URL', 
+        'https://www.linkedin.com/oauth/.well-known/openid-configuration'
+    )
 
-    # ─── Encryption (for LinkedIn tokens stored at rest) ──────────────────────
-    # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # ─── AI (Gemini) ──────────────────────────────────────────────────────────
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+    GEMINI_MODELS = os.environ.get('GEMINI_MODELS', 'gemini-2.5-flash,gemini-2.0-flash')
+
+    # ─── Security ───────────────────────────────────────────────────────────────
     FERNET_KEY = os.environ.get('FERNET_KEY')
-
+    
     # ─── Stripe ───────────────────────────────────────────────────────────────
     STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
     STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
     STRIPE_PRO_PRICE_ID = os.environ.get('STRIPE_PRO_PRICE_ID')
 
-    # ─── AI (Gemini) ──────────────────────────────────────────────────────────
-    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-    GEMINI_MODELS = os.environ.get('GEMINI_MODELS', 'gemini-2.5-flash,gemini-2.0-flash')
-
     # ─── Rate Limiting ────────────────────────────────────────────────────────
-    # In production, switch to redis:// for multi-process/multi-server support
     RATELIMIT_STORAGE_URI = os.environ.get('REDIS_URL', 'memory://')
-    RATELIMIT_HEADERS_ENABLED = True   # Return X-RateLimit-* headers to client
+    RATELIMIT_HEADERS_ENABLED = True
 
-    # ─── Session Security (defaults — overridden per environment below) ───────
+    # ─── Session Security ──────────────────────────────────────────────────────
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
-    SESSION_COOKIE_HTTPONLY = True     # JS cannot read the session cookie
-    SESSION_COOKIE_SAMESITE = 'Lax'   # Prevents CSRF via cross-site requests
-
-    # ─── CSRF Protection ──────────────────────────────────────────────────────
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
     WTF_CSRF_ENABLED = True
-    WTF_CSRF_TIME_LIMIT = 3600  # CSRF token valid for 1 hour
+    WTF_CSRF_TIME_LIMIT = 3600
 
 
 class DevelopmentConfig(Config):
