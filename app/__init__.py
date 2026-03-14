@@ -314,7 +314,19 @@ def create_app(config_name='dev') -> Flask:
         t.daemon = True
         t.start()
 
-    # ── Logging ──────────────────────────────────────────────────────────────
+    # ─── Production Validation ────────────────────────────────────────────────
+    if not app.debug and not app.testing:
+        required_vars = ['SECRET_KEY', 'DATABASE_URL', 'FERNET_KEY', 
+                         'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
+                         'LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET',
+                         'GEMINI_API_KEY']
+        missing = [var for var in required_vars if not app.config.get(var)]
+        if missing:
+            app.logger.error("❌ CRITICAL: Missing required environment variables: %s", ", ".join(missing))
+            # In a real enterprise app, we might sys.exit(1) here.
+            # For now, we log it clearly so you can fix it in Render.
+
+    # ── Proxy Fix ──────────────────────────────────────────────────────────────
     _configure_logging(app)
 
     return app
