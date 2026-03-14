@@ -138,6 +138,7 @@ def create_app(config_name='dev') -> Flask:
         authorize_params=None,
         api_base_url='https://api.linkedin.com/v2/',
         client_kwargs={'scope': 'openid profile w_member_social email'},
+        token_endpoint_auth_method='client_secret_post'
     )
 
     # ── Import models so Flask-Migrate tracks schema ──────────────────────────
