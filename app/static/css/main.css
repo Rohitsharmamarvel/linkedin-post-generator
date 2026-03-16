@@ -131,12 +131,21 @@ select {
     padding: var(--space-lg);
     transition: all var(--transition-slow);
     overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: var(--color-border) transparent;
 }
 
 .sidebar.mobile-active {
     transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        padding: var(--space-md);
+    }
 }
 
 .sidebar::-webkit-scrollbar {
@@ -151,10 +160,17 @@ select {
 .sidebar-brand {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    padding-bottom: var(--space-xl);
+    justify-content: center;
+    padding: var(--space-lg) 0;
     border-bottom: 1px solid var(--color-border-light);
     margin-bottom: var(--space-lg);
+    flex-shrink: 0;
+}
+
+.sidebar-brand img {
+    height: 48px; /* Slightly smaller for better fit */
+    width: auto;
+    object-fit: contain;
 }
 
 .sidebar-brand-icon {
@@ -904,14 +920,34 @@ select {
     .mobile-menu-toggle {
         display: flex !important;
     }
+
+    .step-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+    }
+
+    .step-action {
+        width: 100%;
+    }
+
+    .step-action .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .onboarding-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .mobile-menu-toggle {
     display: none;
     position: fixed;
     top: var(--space-md);
-    left: var(--space-md);
-    z-index: 1000;
+    right: var(--space-md); /* Move to right to avoid overlap with sidebar content */
+    z-index: 2000; /* Higher than sidebar */
     width: 44px;
     height: 44px;
     background: var(--color-surface);

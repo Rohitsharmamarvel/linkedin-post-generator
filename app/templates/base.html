@@ -22,8 +22,8 @@
     {% if current_user.is_authenticated %}
     <!-- ═══ Sidebar ═══ -->
     <nav class="sidebar" id="sidebar">
-        <div class="sidebar-brand" style="justify-content:center; padding: 24px 0 16px;">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="LinkScale" style="height:60px; width:auto; object-fit:contain;">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="LinkScale">
         </div>
 
         <div class="sidebar-nav">
@@ -132,9 +132,12 @@
 
     <!-- ═══ Mobile Menu Toggle ═══ -->
     {% if current_user.is_authenticated %}
-    <button class="mobile-menu-toggle" onclick="toggleSidebar()" title="Toggle Menu">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:24px;height:24px;">
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()" title="Toggle Menu" id="sidebar-toggle">
+        <svg id="menu-icon-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:24px;height:24px;">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+        <svg id="menu-icon-close" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:24px;height:24px; display:none;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
     </button>
     {% endif %}
@@ -190,8 +193,14 @@
         }
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
+            const menuIconOpen = document.getElementById('menu-icon-open');
+            const menuIconClose = document.getElementById('menu-icon-close');
             if (sidebar) {
-                sidebar.classList.toggle('mobile-active');
+                const isActive = sidebar.classList.toggle('mobile-active');
+                if (menuIconOpen && menuIconClose) {
+                    menuIconOpen.style.display = isActive ? 'none' : 'block';
+                    menuIconClose.style.display = isActive ? 'block' : 'none';
+                }
             }
         }
         document.addEventListener('DOMContentLoaded', () => {
