@@ -48,6 +48,9 @@ def google_callback():
         token = oauth.google.authorize_access_token()
     except Exception as e:
         current_app.logger.warning("Google OAuth callback error: %s", e)
+        # Log failure for security monitoring
+        db.session.add(UsageLog(user_id=0, action='login_fail', topic=f"Exception: {str(e)[:150]}"))
+        db.session.commit()
         flash("Google sign-in failed. Please try again.", "danger")
         return redirect(url_for('auth.login'))
 
@@ -57,6 +60,8 @@ def google_callback():
         current_app.logger.warning(
             "OAuth callback received no userinfo. Possible misconfiguration."
         )
+        db.session.add(UsageLog(user_id=0, action='login_fail', topic="No userinfo returned from Google"))
+        db.session.commit()
         return redirect(url_for('auth.login'))
 
     google_id = str(userinfo['sub'])

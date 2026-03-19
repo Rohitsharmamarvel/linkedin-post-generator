@@ -63,6 +63,7 @@ class Config:
     SESSION_COOKIE_SAMESITE = 'Lax'
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = 3600
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:5001,http://127.0.0.1:5001')
 
 
 class DevelopmentConfig(Config):

@@ -110,11 +110,15 @@ def create_app(config_name='dev') -> Flask:
     login_manager.login_message = 'Please sign in to access this page.'
     oauth.init_app(app)
     limiter.init_app(app)
+    # Ensure limiter uses config-provided storage (Redis or Memory)
+    if 'RATELIMIT_STORAGE_URI' in app.config:
+        limiter.storage_uri = app.config['RATELIMIT_STORAGE_URI']
     csrf.init_app(app)
     
     # ── Strict CORS ───────────────────────────────────────────────────────────
     from flask_cors import CORS
-    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5001", "https://yourproductiondomain.com"]}}, supports_credentials=True)
+    cors_origins = app.config.get('CORS_ORIGINS', 'http://localhost:5001').split(',')
+    CORS(app, resources={r"/api/*": {"origins": cors_origins}}, supports_credentials=True)
 
     # ── Google OAuth Client ───────────────────────────────────────────────────
     oauth.register(
@@ -319,7 +323,7 @@ def create_app(config_name='dev') -> Flask:
         required_vars = ['SECRET_KEY', 'DATABASE_URL', 'FERNET_KEY', 
                          'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
                          'LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET',
-                         'GEMINI_API_KEY']
+                         'GEMINI_API_KEY', 'CORS_ORIGINS']
         missing = [var for var in required_vars if not app.config.get(var)]
         if missing:
             app.logger.error("❌ CRITICAL: Missing required environment variables: %s", ", ".join(missing))
