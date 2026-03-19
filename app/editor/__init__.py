@@ -8,6 +8,7 @@ import sys
 import os
 import bleach
 from marshmallow import Schema, fields, validate, ValidationError
+from datetime import datetime, timedelta
 from app.extensions import db, limiter
 from app.models import UsageLog
 
@@ -55,6 +56,23 @@ def api_generate():
     tone = bleach.clean(data.get('tone'), strip=True)
     max_length = data.get('maxLength')
     
+    # 🔴 Mandatory Usage Limits (Business Logic Layer)
+    # Check if user has exceeded their daily AI generation quota
+    day_ago = datetime.utcnow() - timedelta(days=1)
+    gen_count = UsageLog.query.filter(
+        UsageLog.user_id == current_user.id,
+        UsageLog.action == 'generate',
+        UsageLog.created_at >= day_ago
+    ).count()
+    
+    max_gens = 100 if current_user.plan == 'pro' else 10
+    if gen_count >= max_gens:
+        return jsonify({
+            "success": False, 
+            "errors": [{"message": f"Daily AI quota reached ({max_gens} generations). Upgrade to Pro for more."}],
+            "code": "QUOTA_EXCEEDED"
+        }), 403
+
     # Layer 2 (Orchestration): Call Layer 3 (Execution script)
     # (Note: In future, this blocks. To be converted to Celery later step as per standards.)
     result = generate_post(
